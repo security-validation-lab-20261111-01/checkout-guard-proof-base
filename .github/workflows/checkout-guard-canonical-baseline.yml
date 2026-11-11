@@ -1,0 +1,21 @@
+name: checkout guard canonical baseline
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    if: github.event.pull_request.head.repo.full_name == 'security-validation-lab-20261111-01/checkout-guard-proof-fork3'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the owned test branch with a canonical repository input
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: false
+          allow-unsafe-pr-checkout: false
