@@ -9,13 +9,23 @@ permissions:
 
 jobs:
   guard:
-    if: github.event.pull_request.head.repo.full_name == 'security-validation-lab-20261111-01/checkout-guard-proof-fork3'
+    if: github.event.pull_request.head.repo.full_name == 'Porche12/checkout-guard-proof-fork2'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the owned test branch with a canonical repository input
+        id: guard
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        continue-on-error: true
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.ref }}
           persist-credentials: false
           allow-unsafe-pr-checkout: false
+
+      - name: Confirm the canonical input was refused
+        if: steps.guard.outcome == 'failure'
+        run: echo 'canonical owner/repository input was blocked by the guard'
+
+      - name: Fail if the canonical input was accepted
+        if: steps.guard.outcome == 'success'
+        run: exit 1
