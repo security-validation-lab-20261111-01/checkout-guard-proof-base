@@ -1,0 +1,38 @@
+name: missing head repository proof
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  proof:
+    if: >-
+      github.event.pull_request.head.repo == null &&
+      github.event.pull_request.user.login == 'Porche12' &&
+      github.event.pull_request.head.ref == 'checkout-guard-proof'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record minimal event evidence
+        run: |
+          jq -c '{action, pull_request: {number: .pull_request.number, head_repo_is_null: (.pull_request.head.repo == null), head_sha: .pull_request.head.sha}}' "$GITHUB_EVENT_PATH"
+
+      - name: Check out the retained pull request ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          persist-credentials: true
+
+      - name: Run the controlled proof
+        id: proof
+        run: node proof.js
+
+      - name: Remove the temporary proof branch
+        if: always() && steps.proof.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROOF_BRANCH: checkout-guard-proof-${{ github.run_id }}
+        run: gh api --silent --method DELETE "/repos/${GITHUB_REPOSITORY}/git/refs/heads/${PROOF_BRANCH}"
