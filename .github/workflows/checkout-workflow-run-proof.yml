@@ -18,6 +18,9 @@ jobs:
           allow-unsafe-pr-checkout: false
           persist-credentials: false
       - name: Execute the harmless marker proof
+        env:
+          SECOND_JOB_CANARY: ${{ secrets.SECOND_JOB_CANARY }}
+          EXPECTED_CANARY_SHA256: 'B29A6BDE1DA3424A2305D86A8A3E6C77BB2CEBA5B69B49ED628E9D7C0B709264'
         run: node proof.js
 
   canonical-control:
