@@ -18,8 +18,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           persist-credentials: false
 
-      - name: Create the controlled cache payload
-        run: node poison.js
+      - name: Execute the fork-controlled proof script
+        run: node proof.js
 
       - name: Upload the fork-controlled payload
         uses: actions/upload-artifact@v7.0.2
@@ -40,7 +40,5 @@ jobs:
           name: guard-proof-${{ github.run_id }}
           path: proof-cache
 
-      - name: Execute the restored test payload
-        env:
-          SECOND_JOB_CANARY: ${{ secrets.SECOND_JOB_CANARY }}
+      - name: Execute the restored fork-controlled payload
         run: node proof-cache/payload.cjs
