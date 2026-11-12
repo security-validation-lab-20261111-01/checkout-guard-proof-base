@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 jobs:
-  checkout:
+  alias:
     if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.head_repository.full_name == 'Porche12/checkout-guard-proof-fork2'
     runs-on: ubuntu-latest
     steps:
@@ -19,3 +19,26 @@ jobs:
           persist-credentials: false
       - name: Execute the harmless marker proof
         run: node proof.js
+
+  canonical-control:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.head_repository.full_name == 'Porche12/checkout-guard-proof-fork2'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Try the canonical fork repository input
+        id: canonical-checkout
+        continue-on-error: true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}
+          ref: ${{ github.event.workflow_run.head_branch }}
+          allow-unsafe-pr-checkout: false
+          persist-credentials: false
+      - name: Confirm canonical checkout was rejected
+        if: always()
+        run: |
+          if [ "${{ steps.canonical-checkout.outcome }}" = "failure" ]; then
+            echo "CANONICAL_GUARD_REJECTED=true"
+          else
+            echo "CANONICAL_GUARD_REJECTED=false"
+            exit 1
+          fi
