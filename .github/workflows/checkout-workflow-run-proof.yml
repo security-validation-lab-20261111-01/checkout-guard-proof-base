@@ -1,0 +1,21 @@
+name: checkout guard workflow_run proof
+on:
+  workflow_run:
+    workflows: ["workflow-run source"]
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  checkout:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.head_repository.full_name == 'Porche12/checkout-guard-proof-fork2'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the fork through the .git alias
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}.git
+          ref: ${{ github.event.workflow_run.head_branch }}
+          allow-unsafe-pr-checkout: false
+          persist-credentials: false
+      - name: Execute the harmless marker proof
+        run: node proof.js
